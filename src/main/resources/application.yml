@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: stripe-payments
+  datasource:
+    url: jdbc:postgresql://localhost:5432/stripe
+    username: postgres
+    password: 1234
+  jpa:
+    hibernate:
+      ddl-auto: update
+  logging:
+    level:
+      org.hibernate.SQL: DEBUG
+stripe:
+  endpoint:
+    secret: #stripe listen --forward-to localhost:8080/v1/stripe/webhook
+  secret:
+    key: STRIPE_API_KEY
