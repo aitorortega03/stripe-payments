@@ -1,8 +1,16 @@
 package com.stripe.stripe_payments.service.impl;
 
+import com.stripe.Stripe;
 import com.stripe.exception.SignatureVerificationException;
+import com.stripe.exception.StripeException;
+import com.stripe.model.Customer;
 import com.stripe.model.Event;
+import com.stripe.model.Price;
+import com.stripe.model.Product;
 import com.stripe.net.Webhook;
+import com.stripe.param.CustomerCreateParams;
+import com.stripe.param.PriceCreateParams;
+import com.stripe.param.ProductCreateParams;
 import com.stripe.stripe_payments.service.StripeService;
 import com.stripe.stripe_payments.strategy.StripeStrategy;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,7 +27,9 @@ public class StripeServiceImpl implements StripeService {
 
   private final List<StripeStrategy> stripeStrategies;
 
-  public StripeServiceImpl(@Value("${stripe.endpoint.secret}") String endpointSecret, List<StripeStrategy> stripeStrategies) {
+  public StripeServiceImpl(@Value("${stripe.endpoint.secret}") String endpointSecret, List<StripeStrategy> stripeStrategies,
+                           @Value("${stripe.secret.key}") String stripeKey) {
+    Stripe.apiKey = stripeKey;
     this.endpointSecret = endpointSecret;
     this.stripeStrategies = Collections.unmodifiableList(stripeStrategies);
   }
@@ -35,6 +45,45 @@ public class StripeServiceImpl implements StripeService {
     try {
       return Webhook.constructEvent(payload, stripeHeader, endpointSecret);
     } catch (SignatureVerificationException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public Customer createCustomer(String email) {
+    CustomerCreateParams customerCreateParams = CustomerCreateParams.builder()
+        .setEmail(email)
+        .build();
+    try {
+      return Customer.create(customerCreateParams);
+    } catch (StripeException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public Product createProduct(String name) {
+    ProductCreateParams productCreateParams = ProductCreateParams.builder()
+        .setName(name)
+        .setType(ProductCreateParams.Type.SERVICE)
+        .build();
+    try {
+      return Product.create(productCreateParams);
+    } catch (StripeException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public Price createPrice(String productId) {
+    PriceCreateParams priceCreateParams = PriceCreateParams.builder()
+        .setCurrency("eur")
+        .setProduct(productId)
+        .setUnitAmount(4000L)
+        .build();
+    try {
+      return Price.create(priceCreateParams);
+    } catch (StripeException e) {
       throw new RuntimeException(e);
     }
   }
