@@ -1,6 +1,8 @@
 package com.stripe.stripe_payments.controller.impl;
 
 import com.stripe.model.Event;
+import com.stripe.stripe_payments.common.dto.CheckoutRequest;
+import com.stripe.stripe_payments.common.dto.CheckoutResponse;
 import com.stripe.stripe_payments.controller.StripeApi;
 import com.stripe.stripe_payments.service.StripeService;
 import org.springframework.http.ResponseEntity;
@@ -20,5 +22,10 @@ public class StripeController implements StripeApi {
     Event event = stripeService.constructEvent(payload, stripeHeader);
     stripeService.manageWebhook(event);
     return ResponseEntity.noContent().build();
+  }
+
+  @Override
+  public ResponseEntity<CheckoutResponse> createCheckout(CheckoutRequest checkoutRequest) {
+    return ResponseEntity.ok(stripeService.createCheckout(checkoutRequest));
   }
 }
